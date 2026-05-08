@@ -7,12 +7,21 @@ import {
   Bold, Italic, List, AlignLeft, AlignCenter, AlignRight, CircleDot, Circle, Trash, AlertTriangle, Bot, ChevronDown, User, ShoppingCart, FileText, Trash2, File
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { ProductCreateWizard } from "@/components/ProductCreateWizard";
 
 type ViewMode = "list" | "select_type" | "create_form";
 
 export default function ProductosPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [productAdded, setProductAdded] = useState(false);
+  const [isWizard, setIsWizard] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      setIsWizard(searchParams.get("variant") === "wizard");
+    }
+  }, []);
 
   const handleOpenSelectType = () => {
     trackEvent('product_add_clicked');
@@ -39,6 +48,9 @@ export default function ProductosPage() {
   };
 
   if (viewMode === "create_form") {
+    if (isWizard) {
+      return <ProductCreateWizard onBack={handleBackToList} onSaveSuccess={handleProductSaved} />;
+    }
     return <ProductCreateForm onBack={handleBackToList} onSaveSuccess={handleProductSaved} />;
   }
 
