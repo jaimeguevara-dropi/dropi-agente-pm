@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# binary assets in docs (screenshots, fonts, reference images)
+docs/screenshots/
+docs/agregar producto/
+docs/fuente de texto/
+docs/**/*.png
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.ttf
+docs/**/*.otf
+docs/**/*.woff
+docs/**/*.woff2

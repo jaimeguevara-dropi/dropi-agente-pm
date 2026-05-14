@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Beaker, Truck, ArrowRight, FlaskConical } from "lucide-react";
+import { Package, Beaker, Truck, ArrowRight, FlaskConical, Rocket } from "lucide-react";
 
 export default function Home() {
   return (
@@ -70,7 +70,29 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PROYECTO 3: CREACIÓN DE BODEGA */}
+          {/* PROYECTO 3: ACTIVACIÓN SUPPLIER (EXPERIENCIA C) */}
+          <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+            <div className="bg-orange-50/50 border-b border-orange-100 p-6 flex items-center gap-4">
+              <div className="p-3 bg-white rounded-xl shadow-sm text-orange-500 border border-orange-100">
+                <Rocket className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-zinc-800">Flujo: Activación de Supplier</h2>
+                <p className="text-sm text-zinc-500">Variante C — Ruta guiada con sidebar bloqueado y pipeline de 5 pasos.</p>
+              </div>
+            </div>
+            <div className="p-6">
+              <Link href="/onboarding/experiencia-c" className="group flex items-center justify-between p-4 rounded-xl border border-zinc-200 hover:border-orange-400 hover:bg-orange-50 transition-all">
+                <div>
+                  <h3 className="font-bold text-zinc-800 group-hover:text-orange-700">Variante C: Ruta de activación</h3>
+                  <p className="text-sm text-zinc-500">Sidebar limitado + pipeline progresivo + modales de contexto.</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-zinc-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+
+          {/* PROYECTO 5: CREACIÓN DE BODEGA */}
           <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
             <div className="bg-emerald-50/50 border-b border-emerald-100 p-6 flex items-center gap-4">
               <div className="p-3 bg-white rounded-xl shadow-sm text-emerald-600 border border-emerald-100">

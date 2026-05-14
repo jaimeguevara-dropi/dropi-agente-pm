@@ -20,7 +20,10 @@ import {
   Clock,
   Menu,
   ChevronDown,
-  GraduationCap
+  GraduationCap,
+  Network,
+  Layers,
+  Activity
 } from "lucide-react";
 
 export function Sidebar() {
@@ -49,6 +52,9 @@ export function Sidebar() {
     { name: "Roax", icon: Clock, badge: "Nuevo", href: "#" },
     { name: "CAS", icon: Megaphone, hasSubmenu: true, href: "#" },
     { name: "Academy", icon: GraduationCap, badge: "Nuevo", href: "#" },
+    { name: "Combos", icon: Layers, href: "/dashboard/combos", badge: "Nuevo" },
+    { name: "Supplier Graph", icon: Network, href: "/supplier-graph" },
+    { name: "Catálogo Graph", icon: Activity, href: "/supplier-graph/catalogo", badge: "Nuevo" },
   ];
 
   return (

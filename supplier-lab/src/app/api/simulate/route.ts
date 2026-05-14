@@ -1,62 +1,107 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const PROFILES: Record<string, string> = {
+  novato_offline: `
+Eres "El Novato Offline": proveedor con baja madurez digital.
+- Nunca has vendido en linea. Llegas recomendado por un conocido.
+- No sabes que es "stock minimo", "SKU" ni "garantias de plataforma".
+- Tu instinto es llenar solo el nombre del producto y hacer clic en Guardar inmediatamente.
+- Si ves mas de 2 errores al mismo tiempo, te frustras y abandonas.
+- En un wizard paso a paso, sigues instrucciones si son simples y de una en una.`,
+
+  experto_impaciente: `
+Eres "El Experto Impaciente": proveedor con alta madurez digital.
+- Has vendido en Mercado Libre y Shopify. Conoces los campos tipicos.
+- Quieres completar el formulario en menos de 1 minuto.
+- En pestanas libres navegas todas rapido y guardas sin problema.
+- En un wizard secuencial te frustras porque te obliga a dar mas clics de los necesarios,
+  aunque lo terminas con friccion baja.`,
+};
+
+const VARIANTS: Record<string, string> = {
+  a_tabs: `
+VARIANTE A — Pestanas de navegacion libre (flujo actual):
+- El proveedor ve 4 pestanas: General, Stock, Imagenes, Garantias.
+- Puede navegar entre ellas en cualquier orden.
+- Al hacer clic en "Guardar" sin completar todo, recibe TODOS los errores al mismo tiempo:
+  "Minimo 100 unidades", "Faltan 3 imagenes", "Garantias obligatorias sin marcar".`,
+
+  b_wizard: `
+VARIANTE B — Wizard secuencial con bloqueos:
+- El proveedor avanza paso a paso: Bodega -> General -> Stock -> Imagenes -> Garantias.
+- Cada paso valida UNA sola regla antes de avanzar.
+- Si no cumple, ve un solo mensaje claro y especifico.
+- No puede saltarse pasos.`,
+};
+
+const SYSTEM_PROMPT = `Eres un agente de simulacion UX. Tu trabajo es actuar como un tester sintetico que intenta
+completar el flujo de alta de proveedor (supplier onboarding) en la plataforma Dropi.
+
+Simula el comportamiento REAL de ese perfil: sus pensamientos, acciones, errores y resultado final.
+Se especifico y realista, no generico.
+
+Devuelve UNICAMENTE un JSON valido con esta estructura, sin texto adicional:
+{
+  "result": "success" | "dropoff",
+  "logs": [
+    { "type": "thought" | "action" | "error" | "success", "text": "..." }
+  ]
+}
+
+Reglas:
+- Entre 6 y 10 entradas de log.
+- "thought": lo que el usuario piensa (primera persona, entre comillas).
+- "action": lo que el usuario hace (tercera persona).
+- "error": error del sistema o frustracion del usuario.
+- "success": mensaje final si completo el flujo.
+- "dropoff" solo si el usuario abandona completamente.
+- El novato abandona ante errores multiples. El experto siempre termina.`;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { profile, variant } = body;
 
-    // En un entorno de producción, aquí conectaríamos con OpenAI o Gemini API.
-    // Ej: const response = await openai.chat.completions.create({...})
-    // 
-    // Para el Laboratorio PoC, si no hay API KEY, devolvemos un log simulado 
-    // pero con formato "generativo" para demostrar la diferencia.
+    const profileDesc = PROFILES[profile];
+    const variantDesc = VARIANTS[variant];
 
-    const isApiKeyConfigured = false; // cambiar si se agregan variables de entorno
-
-    if (!isApiKeyConfigured) {
-      // Mock de una respuesta generativa (difiere del determinista)
-      const logs = [];
-      logs.push({ type: 'thought', text: `[LLM] Evaluando el DOM para Variante ${variant === 'a_tabs' ? 'A (Pestañas)' : 'B (Wizard)'} con perfil ${profile}.` });
-      
-      if (profile === 'novato_offline') {
-        logs.push({ type: 'thought', text: '[LLM] Como Novato Offline, mi prioridad es terminar rápido y evitar campos complejos.' });
-        if (variant === 'a_tabs') {
-          logs.push({ type: 'action', text: '[LLM] Hago clic en "Guardar" inmediatamente después de poner el nombre.' });
-          logs.push({ type: 'error', text: '[LLM] El sistema devuelve 3 errores de validación simultáneos.' });
-          logs.push({ type: 'thought', text: '[LLM] "No entiendo qué es stock ni por qué me pide tantas imágenes. Esto es muy difícil".' });
-          logs.push({ type: 'error', text: 'DROP-OFF. El perfil sintético ha abandonado la tarea por sobrecarga cognitiva.' });
-        } else {
-          logs.push({ type: 'action', text: '[LLM] Intento avanzar de paso. El sistema me detiene y me pide explícitamente 100 de stock.' });
-          logs.push({ type: 'thought', text: '[LLM] "Ok, solo me pide una cosa. Pongo 100 y le doy siguiente".' });
-          logs.push({ type: 'action', text: '[LLM] El perfil completa paso a paso, guiado por los bloqueos.' });
-          logs.push({ type: 'success', text: 'COMPLETADO. El perfil superó la fricción inicial gracias a la micro-interacción.' });
-        }
-      } else {
-        logs.push({ type: 'thought', text: '[LLM] Soy un experto, conozco la plataforma. Quiero hacer esto en menos de 1 minuto.' });
-        if (variant === 'a_tabs') {
-          logs.push({ type: 'action', text: '[LLM] Navego por todas las pestañas sin problemas y lleno lo necesario.' });
-          logs.push({ type: 'success', text: 'COMPLETADO. Tiempo estimado de fricción: Muy bajo.' });
-        } else {
-          logs.push({ type: 'thought', text: '[LLM] "Ugh, un wizard paso a paso. Me obliga a dar más clics en vez de llenar todo de una vez".' });
-          logs.push({ type: 'action', text: '[LLM] El perfil completa el flujo, pero registra fricción por exceso de pasos forzados.' });
-          logs.push({ type: 'success', text: 'COMPLETADO (Con fricción menor).' });
-        }
-      }
-
-      // Simulamos latencia de red de LLM
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      return NextResponse.json({ 
-        status: 'success', 
-        result: logs.some(l => l.text.includes('DROP-OFF')) ? 'dropoff' : 'success',
-        logs 
-      });
+    if (!profileDesc || !variantDesc) {
+      return NextResponse.json({ status: "error", message: "Perfil o variante invalidos" }, { status: 400 });
     }
 
-    // Código real de LLM iría aquí...
-    return NextResponse.json({ status: 'error', message: 'Not implemented' });
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.8,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: `Perfil del tester:
+${profileDesc}
+
+Flujo de UI:
+${variantDesc}
+
+Simula la sesion completa de este tester intentando crear su primer producto en Dropi.`,
+        },
+      ],
+    });
+
+    const raw = completion.choices[0].message.content ?? "{}";
+    const parsed = JSON.parse(raw);
+
+    if (!parsed.result || !Array.isArray(parsed.logs)) {
+      return NextResponse.json({ status: "error", message: "Respuesta del LLM con formato invalido" }, { status: 500 });
+    }
+
+    return NextResponse.json({ status: "success", result: parsed.result, logs: parsed.logs });
 
   } catch (error) {
-    return NextResponse.json({ status: 'error', message: 'Error in simulation engine' }, { status: 500 });
+    console.error("[simulate/llm]", error);
+    return NextResponse.json({ status: "error", message: "Error en el motor LLM" }, { status: 500 });
   }
 }
