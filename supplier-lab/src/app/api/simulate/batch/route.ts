@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 const PROFILES: Record<string, string> = {
   novato_offline: `
 Eres "El Novato Offline": proveedor con baja madurez digital.
@@ -63,6 +61,7 @@ async function runSingleAgent(profile: string, variant: string): Promise<{
   result: "success" | "dropoff";
   logs: { type: string; text: string }[];
 }> {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const completion = await client.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 0.9,

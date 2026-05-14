@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 const PROFILES: Record<string, string> = {
   novato_offline: `
 Eres "El Novato Offline": proveedor con baja madurez digital.
@@ -62,6 +60,7 @@ Reglas:
 
 export async function POST(request: Request) {
   try {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const body = await request.json();
     const { profile, variant } = body;
 
