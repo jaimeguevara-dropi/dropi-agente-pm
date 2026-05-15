@@ -1,25 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Search, Plus, Download, FileSpreadsheet, X, CheckSquare, 
-  Square, ChevronLeft, ChevronRight, Package, Info, Share, Save, 
+import {
+  Search, Plus, Download, FileSpreadsheet, X, Check, CheckSquare,
+  Square, ChevronLeft, ChevronRight, Package, Info, Share, Save,
   Bold, Italic, List, AlignLeft, AlignCenter, AlignRight, CircleDot, Circle, Trash, AlertTriangle, Bot, ChevronDown, User, ShoppingCart, FileText, Trash2, File
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 import { ProductCreateWizard } from "@/components/ProductCreateWizard";
 
 type ViewMode = "list" | "select_type" | "create_form";
 
 export default function ProductosPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [productAdded, setProductAdded] = useState(false);
   const [isWizard, setIsWizard] = useState(false);
+  const [comboCreatedToast, setComboCreatedToast] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
       setIsWizard(searchParams.get("variant") === "wizard");
+      if (searchParams.get("combo_created") === "1") {
+        setComboCreatedToast(true);
+        window.history.replaceState({}, "", "/dashboard/productos");
+        setTimeout(() => setComboCreatedToast(false), 5000);
+      }
     }
   }, []);
 
@@ -32,6 +40,11 @@ export default function ProductosPage() {
     trackEvent('product_type_selected', { type: 'nuevo' });
     trackEvent('product_creation_started');
     setViewMode("create_form");
+  };
+
+  const handleSelectCombo = () => {
+    trackEvent('product_type_selected', { type: 'combo' });
+    router.push('/dashboard/productos/combo');
   };
 
   const handleCloseSelectType = () => {
@@ -57,34 +70,45 @@ export default function ProductosPage() {
   return (
     <div className="flex flex-col gap-6 pb-24 relative">
       <h1 className="text-2xl font-bold text-zinc-800">Productos</h1>
-      
-      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative">
-        
-        {/* Overlay and Modal for Select Type */}
-        {viewMode === "select_type" && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-xl shadow-2xl w-[500px] overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-zinc-800">Añadir producto</h2>
-                  <p className="text-sm text-zinc-500 mt-1">Selecciona el tipo de producto</p>
-                </div>
-                <button onClick={handleCloseSelectType} className="text-zinc-400 hover:text-zinc-600">
-                  <X className="w-6 h-6" />
-                </button>
+
+      {/* Overlay "Añadir producto" — fixed para cubrir toda la ventana */}
+      {viewMode === "select_type" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-[500px] overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-zinc-800">Añadir producto</h2>
+                <p className="text-sm text-zinc-500 mt-1">Selecciona el tipo de producto</p>
               </div>
-              <div className="p-10 flex justify-center bg-zinc-50/50">
-                <button 
-                  onClick={handleSelectNewProduct}
-                  className="w-full max-w-[280px] bg-white border border-zinc-200 hover:border-[#0ea5e9] hover:bg-sky-50 rounded-xl p-8 flex flex-col items-center justify-center gap-4 transition-all shadow-sm hover:shadow-md group"
-                >
-                  <Package className="w-12 h-12 text-[#0ea5e9] group-hover:scale-110 transition-transform" />
-                  <span className="font-bold text-[#0ea5e9] text-lg">Nuevo Producto</span>
-                </button>
-              </div>
+              <button onClick={handleCloseSelectType} className="text-zinc-400 hover:text-zinc-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-8 flex flex-col gap-4 bg-zinc-50/50">
+              <button
+                onClick={handleSelectNewProduct}
+                className="w-full bg-white border border-zinc-200 hover:border-[#0ea5e9] hover:bg-sky-50 rounded-xl p-7 flex flex-col items-center justify-center gap-3 transition-all shadow-sm hover:shadow-md group"
+              >
+                <Package className="w-12 h-12 text-[#0ea5e9] group-hover:scale-110 transition-transform" />
+                <span className="font-bold text-[#0ea5e9] text-lg">Nuevo Producto</span>
+              </button>
+              <button
+                onClick={handleSelectCombo}
+                className="w-full bg-white border border-zinc-200 hover:border-[#ff7b00] hover:bg-[#fff7f0] rounded-xl p-7 flex flex-col items-center justify-center gap-3 transition-all shadow-sm hover:shadow-md group"
+              >
+                <svg className="w-12 h-12 text-[#ff7b00] group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="8" y="22" width="14" height="14" rx="2"/>
+                  <rect x="26" y="22" width="14" height="14" rx="2"/>
+                  <rect x="17" y="10" width="14" height="14" rx="2"/>
+                </svg>
+                <span className="font-bold text-[#ff7b00] text-lg">Combo de productos</span>
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col relative">
 
         {/* Superior Toolbar: Buscador y Filtros Checkbox */}
         <div className="p-4 border-b border-zinc-100 flex flex-col lg:flex-row lg:items-center gap-6">
@@ -239,6 +263,33 @@ export default function ProductosPage() {
 
       {/* Video Modal Flotante */}
       {viewMode === "list" && !productAdded && <VideoOnboardingModal />}
+
+      {/* Toast combo creado */}
+      {comboCreatedToast && (
+        <div className="fixed top-4 right-4 z-50 bg-white border border-zinc-200 rounded-xl shadow-lg p-4 flex items-start gap-3 max-w-xs animate-in slide-in-from-right duration-300">
+          <div className="relative shrink-0">
+            <svg viewBox="0 0 40 40" className="w-10 h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="19" fill="#ff7b00" />
+              <ellipse cx="13" cy="19" rx="5" ry="6" fill="white" />
+              <ellipse cx="27" cy="19" rx="5" ry="6" fill="white" />
+              <circle cx="14" cy="20" r="3" fill="#1a1a1a" />
+              <circle cx="28" cy="20" r="3" fill="#1a1a1a" />
+              <circle cx="15" cy="18" r="1" fill="white" />
+              <circle cx="29" cy="18" r="1" fill="white" />
+            </svg>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+              <Check size={10} className="text-white" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-zinc-800">¡Combo creado!</p>
+            <p className="text-xs text-zinc-500 mt-0.5">Los cambios se aplicaron correctamente.</p>
+          </div>
+          <button onClick={() => setComboCreatedToast(false)} className="text-zinc-400 hover:text-zinc-600 shrink-0 mt-0.5">
+            <X size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

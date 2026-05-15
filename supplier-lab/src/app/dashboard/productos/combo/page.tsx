@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   X, Search, Package, AlertTriangle, Plus, ChevronLeft, ChevronRight,
   ShoppingCart, Trash2, ChevronDown, Bold, Italic, List, Link as LinkIcon,
-  AlignLeft, AlignCenter, AlignRight, Undo, Redo, Upload, Star,
+  AlignLeft, AlignCenter, AlignRight, Undo, Redo, Upload, Star, Check,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
@@ -301,6 +301,7 @@ export default function ComboCreatePage() {
 
   // Navigation
   const [activeStep, setActiveStep] = useState(1);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Step 1
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -937,7 +938,7 @@ export default function ComboCreatePage() {
         )}
         <button
           disabled={!canNext}
-          onClick={activeStep === STEPS.length ? () => trackEvent("combo_created", {}) : handleNext}
+          onClick={activeStep === STEPS.length ? () => { trackEvent("combo_created", {}); setShowSuccessModal(true); } : handleNext}
           className={`px-8 py-2.5 rounded-xl text-sm font-bold text-white transition-colors shadow-sm ${
             canNext ? "bg-[#ff7b00] hover:bg-[#e06c00]" : "bg-[#ffb366] cursor-not-allowed"
           }`}
@@ -1022,6 +1023,36 @@ export default function ComboCreatePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Modal éxito ── */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div className="relative w-24 h-24 mx-auto mb-5">
+              <svg viewBox="0 0 80 80" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="38" fill="#ff7b00" />
+                <ellipse cx="27" cy="38" rx="10" ry="11" fill="white" />
+                <ellipse cx="53" cy="38" rx="10" ry="11" fill="white" />
+                <circle cx="29" cy="39" r="6" fill="#1a1a1a" />
+                <circle cx="55" cy="39" r="6" fill="#1a1a1a" />
+                <circle cx="31" cy="36" r="2" fill="white" />
+                <circle cx="57" cy="36" r="2" fill="white" />
+                <path d="M 28 56 Q 40 64 52 56" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                <circle cx="62" cy="18" r="11" fill="#ff7b00" stroke="white" strokeWidth="2" />
+                <path d="M 56 18 L 60 22 L 68 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-zinc-800 mb-2">Combo creado correctamente</h2>
+            <p className="text-sm text-zinc-500 mb-6">Tu combo fue guardado. Podrás verlo en tu listado de productos.</p>
+            <button
+              onClick={() => router.push("/dashboard/productos?combo_created=1")}
+              className="w-full py-3 bg-[#ff7b00] hover:bg-[#e06c00] text-white font-bold rounded-xl text-sm transition-colors"
+            >
+              Aceptar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
