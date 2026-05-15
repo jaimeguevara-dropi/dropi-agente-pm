@@ -12,6 +12,28 @@ import { ProductCreateWizard } from "@/components/ProductCreateWizard";
 
 type ViewMode = "list" | "select_type" | "create_form";
 
+// ─── Mock product list (fiel a Dropi) ─────────────────────────────────────────
+
+const MOCK_PRODUCTS = [
+  { id: 2088171, name: "Bateria Portatil Solar",      type: "VARIABLE", stock: 73,  cost: 65000,  suggested: 85000,  date: "18/02", image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=80&auto=format&fit=crop", approved: true,  private: false },
+  { id: 2088170, name: "Cable Red Ethernet 5 Metros", type: "SIMPLE",   stock: 150, cost: 15000,  suggested: 20000,  date: "18/02", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&auto=format&fit=crop", approved: true,  private: false },
+  { id: 2149593, name: "Combo simple",                type: "COMBO",    stock: 100, cost: 35000,  suggested: 40000,  date: "12/05", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=80&auto=format&fit=crop", approved: false, private: false },
+  { id: 2010716, name: "usb c",                       type: "SIMPLE",   stock: 0,   cost: 2000,   suggested: 20000,  date: "28/11", image: null, approved: false, private: false },
+  { id: 2151807, name: "como prueba jaime",           type: "COMBO",    stock: 73,  cost: 85000,  suggested: 85000,  date: "15/05", image: "https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=80&auto=format&fit=crop", approved: false, private: false },
+  { id: 2151821, name: "combo simple 47 stock",       type: "COMBO",    stock: 47,  cost: 19000,  suggested: 25000,  date: "15/05", image: null, approved: false, private: false },
+  { id: 2137638, name: "prueba",                      type: "VARIABLE", stock: 12,  cost: 10000,  suggested: 15000,  date: "24/04", image: null, approved: false, private: false },
+  { id: 2026631, name: "adaptador usb",               type: "SIMPLE",   stock: 100, cost: 20000,  suggested: 20000,  date: "22/12", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=80&auto=format&fit=crop", approved: true,  private: false },
+  { id: 2147540, name: "Prueba combo",                type: "COMBO",    stock: 6,   cost: 85001,  suggested: 125001, date: "08/05", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&auto=format&fit=crop", approved: false, private: false },
+  { id: 2147551, name: "123 Prueba",                  type: "COMBO",    stock: 24,  cost: 139001, suggested: 139001, date: "08/05", image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=80&auto=format&fit=crop", approved: false, private: false },
+  { id: 2023144, name: "proyector 4k",                type: "SIMPLE",   stock: 0,   cost: 20000,  suggested: 30000,  date: "05/03", image: null, approved: false, private: false },
+];
+
+const TYPE_STYLE: Record<string, string> = {
+  SIMPLE:   "text-zinc-500",
+  VARIABLE: "text-amber-600 font-semibold",
+  COMBO:    "text-blue-600 font-semibold",
+};
+
 export default function ProductosPage() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -187,28 +209,60 @@ export default function ProductosPage() {
                 </tr>
               </thead>
               <tbody>
-                {productAdded ? (
-                  <tr className="hover:bg-zinc-50 border-b border-zinc-100 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="w-4 h-4 border border-zinc-300 rounded bg-white"></div>
+                {/* Fila del producto/combo recién creado */}
+                {(productAdded || comboCreatedToast) && (
+                  <tr className="hover:bg-zinc-50 border-b border-zinc-100 bg-orange-50/40 transition-colors">
+                    <td className="px-4 py-4"><div className="w-4 h-4 border border-zinc-300 rounded bg-white" /></td>
+                    <td className="px-4 py-4 font-medium">
+                      <div className="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=80&auto=format&fit=crop" alt="" className="w-10 h-10 object-cover rounded-md" />
+                        {comboCreatedToast ? "2151900" : "2147232"}
+                      </div>
                     </td>
-                    <td className="px-4 py-4 font-medium flex items-center gap-3">
-                      <img 
-                        src="https://images.unsplash.com/photo-1600857062241-98e5dba7f214?q=80&w=100&auto=format&fit=crop" 
-                        alt="jabon" 
-                        className="w-10 h-10 object-cover rounded-md"
-                      />
-                      2147232
-                    </td>
-                    <td className="px-4 py-4 text-zinc-600">jabon</td>
-                    <td className="px-4 py-4 text-zinc-600">SIMPLE</td>
+                    <td className="px-4 py-4 text-zinc-600">{comboCreatedToast ? "Mi nuevo combo" : "jabon"}</td>
+                    <td className={`px-4 py-4 ${comboCreatedToast ? TYPE_STYLE["COMBO"] : TYPE_STYLE["SIMPLE"]}`}>{comboCreatedToast ? "COMBO" : "SIMPLE"}</td>
                     <td className="px-4 py-4 text-zinc-600">100</td>
                     <td className="px-4 py-4 text-zinc-600">$ 20.000</td>
                     <td className="px-4 py-4 text-zinc-600">$ 25.000</td>
-                    <td className="px-4 py-4 text-zinc-600">08/05/2026 11:36 a. m.</td>
-                    <td className="px-4 py-4 text-zinc-600">42053 - bodega 1 <span className="font-bold">Stock:</span> 100</td>
+                    <td className="px-4 py-4 text-zinc-400 text-xs">15/05/2026</td>
+                    <td className="px-4 py-4 text-zinc-500 text-xs">Bodega Principal Pruebas</td>
+                    <td className="px-4 py-4"><span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">NO</span></td>
+                    <td className="px-4 py-4"><span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">NO</span></td>
                     <td className="px-4 py-4">
-                      <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">NO</span>
+                      <div className="flex items-center gap-3">
+                        <button className="text-sky-500 hover:text-sky-600"><User className="w-4 h-4" /></button>
+                        <button className="text-emerald-500 hover:text-emerald-600"><ShoppingCart className="w-4 h-4" /></button>
+                        <button className="text-amber-500 hover:text-amber-600"><FileText className="w-4 h-4" /></button>
+                        <button className="text-red-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                        <button className="text-sky-500 hover:text-sky-600"><File className="w-4 h-4" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                {/* Lista mock de productos */}
+                {MOCK_PRODUCTS.map((p) => (
+                  <tr key={p.id} className="hover:bg-zinc-50 border-b border-zinc-100 transition-colors">
+                    <td className="px-4 py-4"><div className="w-4 h-4 border border-zinc-300 rounded bg-white" /></td>
+                    <td className="px-4 py-4 font-medium">
+                      <div className="flex items-center gap-3">
+                        {p.image
+                          ? <img src={p.image} alt="" className="w-10 h-10 object-cover rounded-md shrink-0" />
+                          : <div className="w-10 h-10 bg-zinc-100 rounded-md flex items-center justify-center shrink-0"><Package className="w-4 h-4 text-zinc-300" /></div>
+                        }
+                        {p.id}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-zinc-600">{p.name}</td>
+                    <td className={`px-4 py-4 ${TYPE_STYLE[p.type]}`}>{p.type}</td>
+                    <td className={`px-4 py-4 font-medium ${p.stock === 0 ? "text-red-500" : "text-zinc-600"}`}>{p.stock}</td>
+                    <td className="px-4 py-4 text-zinc-600">$ {p.cost.toLocaleString("es-CO")}</td>
+                    <td className="px-4 py-4 text-zinc-600">$ {p.suggested.toLocaleString("es-CO")}</td>
+                    <td className="px-4 py-4 text-zinc-400 text-xs">{p.date}</td>
+                    <td className="px-4 py-4 text-zinc-500 text-xs">Bodega Principal Pruebas</td>
+                    <td className="px-4 py-4">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${p.approved ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                        {p.approved ? "SI" : "NO"}
+                      </span>
                     </td>
                     <td className="px-4 py-4">
                       <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">NO</span>
@@ -223,13 +277,7 @@ export default function ProductosPage() {
                       </div>
                     </td>
                   </tr>
-                ) : (
-                  <tr>
-                    <td colSpan={12} className="p-8 text-center text-zinc-500">
-                      No hay productos para mostrar.
-                    </td>
-                  </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -245,8 +293,8 @@ export default function ProductosPage() {
               </select>
             </div>
             <div>
-              <p>Mostrando {productAdded ? "1" : "0"} de {productAdded ? "1" : "0"} productos.</p>
-              <p>Página 1 de {productAdded ? "1" : "0"}.</p>
+              <p>Mostrando {MOCK_PRODUCTS.length + (productAdded || comboCreatedToast ? 1 : 0)} de {MOCK_PRODUCTS.length + (productAdded || comboCreatedToast ? 1 : 0)} productos.</p>
+              <p>Página 1 de 1.</p>
             </div>
           </div>
           
